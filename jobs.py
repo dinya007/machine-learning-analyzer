@@ -2,16 +2,18 @@ import os
 import sys
 
 from regression.xgboost.xgboost_regressor import XGBoost
-
+import pickle
 
 class Jobs:
-    jobs = {}
 
     def train_regressor(self, job_id, file):
         try:
-            xg_boost = XGBoost()
-            xg_boost.train(file)
-            self.jobs[job_id] = xg_boost
+            model = XGBoost()
+            model.train(file)
+
+            with open('/Users/denis/IdeaProjects/machine-learning-analyzer/model/xgboost.pickle', 'wb') as file:
+                pickle.dump(model, file)
+
             return {'status': 'SUCCESS'}
         except:
             e = sys.exc_info()[0]
@@ -20,9 +22,11 @@ class Jobs:
 
     def predict(self, job_id, predict_data_file_path, result_file_path):
         try:
-            predictions = self.jobs[job_id].predict(predict_data_file_path)
-            self.write_results(result_file_path, predictions)
-            return {'status': 'SUCCESS'}
+            with open('/Users/denis/IdeaProjects/machine-learning-analyzer/model/xgboost.pickle', 'rb') as handle:
+                model = pickle.load(handle)
+                predictions = model.predict(predict_data_file_path)
+                self.write_results(result_file_path, predictions)
+                return {'status': 'SUCCESS'}
         except:
             e = sys.exc_info()[0]
             print("Errro %s" % e)
