@@ -45,6 +45,8 @@ class XGBoost:
         return self.regressor is not None
 
     def predict(self, file_path):
+        print("Predicting...")
+
         dataset = pd.read_csv(file_path)
 
         rows = dataset.iloc[:, :].values
@@ -54,7 +56,9 @@ class XGBoost:
         rows = self.standard_scaler.transform(rows)
         for i in self.columns_to_delete:
             rows = np.delete(rows, i, 1)
-        return self.regressor.predict(rows)
+        result = self.regressor.predict(rows)
+        print("Predicted...")
+        return result
 
     def import_dataset(self, train_file):
         dataset = pd.read_csv(train_file)

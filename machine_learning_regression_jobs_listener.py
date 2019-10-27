@@ -13,7 +13,7 @@ port = os.getenv("ACTIVEMQ_PORT") or 61613
 id = 'machine-learning-analyzer'
 
 
-class RegressionTrainRequestListener(object):
+class RegressionModelRequestListener(object):
 
     def __init__(self, destination, jobs):
         self.jobs = jobs
@@ -30,13 +30,13 @@ class RegressionTrainRequestListener(object):
         print("Received %s message" % message)
         job_id = headers['correlation-id']
         message = json.loads(message)
-        result = self.jobs.train_regressor(job_id, message['filePath'])
+        result = self.jobs.train(message['dataPath'], message['modelPath'])
         result = json.dumps(result)
         self.connection.send(destination=headers['reply-to'], body=result,
                              headers={'amq-msg-type': 'text', 'correlation-id': job_id}, persistent='false')
 
 
-class RegressionPredictRequestListener(object):
+class RegressionPredictionRequestListener(object):
 
     def __init__(self, destination, jobs):
         self.jobs = jobs
@@ -53,7 +53,7 @@ class RegressionPredictRequestListener(object):
         print("Received %s message" % message)
         predicting_job_id = headers['correlation-id']
         message = json.loads(message)
-        result = self.jobs.predict(message['trainingJobId'], message['predictDataFilePath'], message['resultFilePath'])
+        result = self.jobs.predict(message['dataPath'], message['modelPath'], message['resultPath'])
         result = json.dumps(result)
         self.connection.send(destination=headers['reply-to'], body=result,
                              headers={'amq-msg-type': 'text', 'correlation-id': predicting_job_id}, persistent='false')
@@ -61,8 +61,8 @@ class RegressionPredictRequestListener(object):
 
 jobs = Jobs()
 
-RegressionTrainRequestListener('regression-train-request', jobs)
-RegressionPredictRequestListener('regression-predict-request', jobs)
+RegressionModelRequestListener('regression-train-request', jobs)
+RegressionPredictionRequestListener('regression-predict-request', jobs)
 
 print("Waiting for messages...")
 while 1:

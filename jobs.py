@@ -1,39 +1,36 @@
 import os
+import pickle
 import sys
 
 from regression.xgboost.xgboost_regressor import XGBoost
-import pickle
+
 
 class Jobs:
 
-    def train_regressor(self, job_id, file):
+    def train(self, data_path, model_path):
         try:
             model = XGBoost()
-            model.train(file)
-
-            with open('/Users/denis/IdeaProjects/machine-learning-analyzer/model/xgboost.pickle', 'wb') as file:
+            model.train(data_path)
+            os.makedirs(os.path.dirname(model_path))
+            with open(model_path, 'wb') as file:
                 pickle.dump(model, file)
-
             return {'status': 'SUCCESS'}
         except:
             e = sys.exc_info()[0]
             print("Errro %s" % e)
             return {'status': 'ERROR'}
 
-    def predict(self, job_id, predict_data_file_path, result_file_path):
+    def predict(self, data_path, model_path, result_path):
         try:
-            with open('/Users/denis/IdeaProjects/machine-learning-analyzer/model/xgboost.pickle', 'rb') as handle:
-                model = pickle.load(handle)
-                predictions = model.predict(predict_data_file_path)
-                self.write_results(result_file_path, predictions)
+            with open(model_path, 'rb') as file:
+                model = pickle.load(file)
+                predictions = model.predict(data_path)
+                self.write_results(result_path, predictions)
                 return {'status': 'SUCCESS'}
         except:
             e = sys.exc_info()[0]
             print("Errro %s" % e)
             return {'status': 'ERROR'}
-
-    def getRegressor(self):
-        return XGBoost()
 
     def write_results(self, result_file_path, results):
         directory = os.path.dirname(result_file_path)
