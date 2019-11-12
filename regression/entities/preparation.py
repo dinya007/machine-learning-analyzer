@@ -39,7 +39,7 @@ class CategoricalFeature:
         self.name = name
         self.missing = missing
         self.top = top
-        self.frequency_top = frequency_top
+        self.frequencyTop = frequency_top
         self.unique = unique
         self.count = count
         self.values = values
