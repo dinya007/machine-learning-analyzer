@@ -1,12 +1,12 @@
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import GridSearchCV
 from sklearn.svm import SVR
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier
 
 from common.ModelTemplate import ModelTemplate
 
 
-class XGBoostRegressor:
+class XGBoostClassifier:
 
     def __init__(self):
         self.model_template = ModelTemplate()
@@ -18,7 +18,7 @@ class XGBoostRegressor:
         return self.model_template.predict(file_path)
 
     def get_model(self, X_train, y_train):
-        xg_boost_classifier = XGBRegressor(n_estimators=100, random_state=0, objective='reg:squarederror')
+        xg_boost_classifier = XGBClassifier(n_estimators=100, random_state=0, objective='reg:squarederror')
 
         # self.optimizeHyperParameters(X_train, y_train)
         return xg_boost_classifier
@@ -45,16 +45,11 @@ class XGBoostRegressor:
         print("Best params SVR: {}".format(svr_grid_search.best_params_))
 
 
-# regressor = XGBoostRegressor()
-# regressor.train('train.csv')
-# id_column_name, target_column_name, ids, predictions = regressor.predict('test.csv')
+# classifier = XGBoostClassifier()
+# classifier.train('train.csv')
+# id_column_name, target_column_name, ids, predictions = classifier.predict('test.csv')
 #
 # with open('result.csv', 'w') as file:
 #     file.write("{},{}\n".format(id_column_name, target_column_name))
 #     for i in range(len(predictions)):
 #         file.write("{},{}\n".format(ids[i], predictions[i]))
-#
-#
-# print('Done!')
-# pyplot.bar(range(len(regressor.regressor.feature_importances_)), regressor.regressor.feature_importances_)
-# pyplot.show()

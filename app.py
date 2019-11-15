@@ -4,7 +4,11 @@ import time
 
 import stomp
 
-from jobs import Jobs
+from classification.xgboost_classifier import XGBoostClassifier
+from common.entities.train_response import TrainResponseEncoder
+from regression.xgboost.xgboost_regressor import XGBoostRegressor
+from routers.algorithms import Algorithms
+from routers.analyzers import Analyzers
 
 user = os.getenv("ACTIVEMQ_USER") or "admin"
 password = os.getenv("ACTIVEMQ_PASSWORD") or "password"
@@ -36,7 +40,7 @@ class DatasetRequestListener(object):
                              headers={'amq-msg-type': 'text', 'correlation-id': job_id}, persistent='false')
 
 
-class RegressionModelRequestListener(object):
+class ModelRequestListener(object):
 
     def __init__(self, destination, jobs):
         self.jobs = jobs
@@ -54,12 +58,12 @@ class RegressionModelRequestListener(object):
         job_id = headers['correlation-id']
         message = json.loads(message)
         result = self.jobs.train(message['dataPath'], message['modelPath'])
-        result = json.dumps(result)
+        result = TrainResponseEncoder().encode(result)
         self.connection.send(destination=headers['reply-to'], body=result,
                              headers={'amq-msg-type': 'text', 'correlation-id': job_id}, persistent='false')
 
 
-class RegressionPredictionRequestListener(object):
+class PredictionRequestListener(object):
 
     def __init__(self, destination, jobs):
         self.jobs = jobs
@@ -82,11 +86,15 @@ class RegressionPredictionRequestListener(object):
                              headers={'amq-msg-type': 'text', 'correlation-id': predicting_job_id}, persistent='false')
 
 
-jobs = Jobs()
+analyzers = Analyzers()
+regressors = Algorithms(XGBoostRegressor)
+classifiers = Algorithms(XGBoostClassifier)
 
-DatasetRequestListener('dataset-analyze-request', jobs)
-RegressionModelRequestListener('regression-train-request', jobs)
-RegressionPredictionRequestListener('regression-predict-request', jobs)
+DatasetRequestListener('dataset-analyze-request', analyzers)
+ModelRequestListener('regression-train-request', regressors)
+PredictionRequestListener('regression-predict-request', regressors)
+ModelRequestListener('classification-train-request', classifiers)
+PredictionRequestListener('classification-predict-request', classifiers)
 
 print("Waiting for messages...")
 while 1:

@@ -4,7 +4,7 @@ from json import JSONEncoder
 import numpy as np
 
 
-class Preparation:
+class FeatureAnalysis:
 
     def __init__(self):
         self.categorical = Analyze()
@@ -47,7 +47,7 @@ class CategoricalFeature:
 
 class PreparationEncoder(JSONEncoder):
     def default(self, object):
-        if isinstance(object, Preparation):
+        if isinstance(object, FeatureAnalysis):
             return object.__dict__
         elif isinstance(object, Analyze):
             return object.__dict__
